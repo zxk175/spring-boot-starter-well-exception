@@ -135,7 +135,7 @@ public class GlobalExceptionHandler {
     }
 
     private Object buildExceptionInfo(Exception ex, String title) {
-        return Response.fail(title + ex.getMessage());
+        return Response.fail(title);
     }
 
 }
