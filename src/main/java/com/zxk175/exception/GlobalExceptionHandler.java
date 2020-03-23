@@ -68,15 +68,15 @@ public class GlobalExceptionHandler {
         BindingResult bindingResult = ex.getBindingResult();
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
 
-        ErrorDto errorDTO;
+        ErrorDto errorDto;
         List<ErrorDto> errorDtoList = new ArrayList<>(fieldErrors.size());
         for (FieldError fieldError : fieldErrors) {
-            errorDTO = new ErrorDto()
+            errorDto = new ErrorDto()
                     .setField(fieldError.getField())
                     .setMessage(fieldError.getDefaultMessage())
                     .setRejectedValue(fieldError.getRejectedValue());
 
-            errorDtoList.add(errorDTO);
+            errorDtoList.add(errorDto);
         }
 
         Map<Object, Object> data = new HashMap<>(8);
@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
         Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
         Iterator<ConstraintViolation<?>> it = violations.iterator();
 
-        ErrorDto errorDTO;
+        ErrorDto errorDto;
         List<ErrorDto> errorDtoList = new LinkedList<>();
         while (it.hasNext()) {
             ConstraintViolation<?> violation = it.next();
@@ -101,13 +101,13 @@ public class GlobalExceptionHandler {
             NodeImpl leafNode = propertyPath.getLeafNode();
             int parameterIndex = leafNode.getParameterIndex();
 
-            errorDTO = new ErrorDto()
+            errorDto = new ErrorDto()
                     .setField(leafNode.getName())
                     .setMessage(violation.getMessage())
                     .setRejectedValue(violation.getInvalidValue())
                     .setIndex(parameterIndex);
 
-            errorDtoList.add(errorDTO);
+            errorDtoList.add(errorDto);
         }
 
         // 排序从小到大
@@ -135,7 +135,7 @@ public class GlobalExceptionHandler {
     }
 
     private Object buildExceptionInfo(Exception ex, String title) {
-        return Response.fail(title);
+        return Response.fail(title + ex.getMessage());
     }
 
 }
