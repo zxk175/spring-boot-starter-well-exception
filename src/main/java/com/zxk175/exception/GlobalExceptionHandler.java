@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
             errorDtoList.add(errorDTO);
         }
 
-        Map<Object, Object> data = new HashMap<>();
+        Map<Object, Object> data = new HashMap<>(8);
         data.put("errors", errorDtoList);
 
         buildExceptionInfo(ex, "bean参数校验异常");
@@ -113,7 +113,7 @@ public class GlobalExceptionHandler {
         // 排序从小到大
         errorDtoList.sort(Comparator.comparingInt(ErrorDto::getIndex));
 
-        Map<Object, Object> data = new HashMap<>();
+        Map<Object, Object> data = new HashMap<>(8);
         data.put("errors", errorDtoList);
 
         buildExceptionInfo(ex, "单个参数校验异常");
