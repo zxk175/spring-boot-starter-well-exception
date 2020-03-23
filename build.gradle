@@ -10,8 +10,8 @@ buildscript {
 
 plugins {
     id "java"
-    id "maven-publish"
     id "signing"
+    id "maven-publish"
 }
 
 configurations {
