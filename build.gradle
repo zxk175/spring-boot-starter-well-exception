@@ -2,14 +2,16 @@ buildscript {
     repositories {
         mavenLocal()
 
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
-        maven { url 'https://maven.aliyun.com/repository/jcenter' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+        maven { url "https://maven.aliyun.com/repository/jcenter" }
+        maven { url "https://maven.aliyun.com/repository/google" }
     }
 }
 
 plugins {
-    id 'java'
+    id "java"
+    id "maven-publish"
+    id "signing"
 }
 
 configurations {
@@ -21,35 +23,136 @@ configurations {
 repositories {
     mavenLocal()
 
-    maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
-    maven { url 'https://maven.aliyun.com/repository/jcenter' }
-    maven { url 'https://maven.aliyun.com/repository/google' }
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+    maven { url "https://maven.aliyun.com/repository/jcenter" }
+    maven { url "https://maven.aliyun.com/repository/google" }
 }
 
-group = 'com.zxk175'
-version = '1.0.0'
-sourceCompatibility = '1.8'
+group = "com.zxk175"
+version = "1.0.0"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+jar {
+    afterEvaluate {
+        manifest {
+            attributes "Implementation-Version": archiveVersion
+            attributes "Built-Gradle": gradle.gradleVersion
+            attributes "Build-OS": System.getProperty("os.name")
+            attributes "Built-By": System.getProperty("user.name")
+            attributes "Build-Jdk": System.getProperty("java.version")
+            attributes "Build-Timestamp": new Date().format("yyyy-MM-dd HH:mm:ss")
+        }
+    }
+}
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.10'
-    annotationProcessor 'org.projectlombok:lombok:1.18.10'
+    compileOnly "org.projectlombok:lombok:1.18.10"
+    annotationProcessor "org.projectlombok:lombok:1.18.10"
 
-    implementation 'org.springframework:spring-webmvc:5.2.4.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-starter:2.2.5.RELEASE'
+    implementation "org.springframework:spring-webmvc:5.2.4.RELEASE"
+    implementation "org.springframework.boot:spring-boot-starter:2.2.5.RELEASE"
 
-    implementation 'javax.servlet:javax.servlet-api:4.0.1'
-    implementation 'io.springfox:springfox-swagger2:2.7.0'
-    implementation 'javax.validation:validation-api:2.0.1.Final'
-    implementation 'org.hibernate.validator:hibernate-validator:6.1.2.Final'
+    implementation "javax.servlet:javax.servlet-api:4.0.1"
+    implementation "io.springfox:springfox-swagger2:2.7.0"
+    implementation "javax.validation:validation-api:2.0.1.Final"
+    implementation "org.hibernate.validator:hibernate-validator:6.1.2.Final"
 
-    implementation 'cn.hutool:hutool-core:5.2.3'
-    implementation 'com.alibaba:fastjson:1.2.66'
-    implementation 'com.github.sd4324530:JTuple:1.2.1'
-    implementation 'com.squareup.okhttp3:okhttp:3.14.2'
+    implementation "cn.hutool:hutool-core:5.2.3"
+    implementation "com.alibaba:fastjson:1.2.66"
+    implementation "com.github.sd4324530:JTuple:1.2.1"
+    implementation "com.squareup.okhttp3:okhttp:4.1.0"
 }
 
 test {
     failFast = true
     useJUnitPlatform()
     testLogging { showStandardStreams = true }
+}
+
+task showRepositories() {
+    repositories.each {
+        println ("repository: ${it.url}")
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier.set("sources")
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier.set("javadoc")
+}
+
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet "UTF-8"
+    }
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.allTasks.any { it instanceof Sign }) {
+        ext."signing.keyId" = "75D6960E"
+        ext."signing.password" = "123456789"
+        ext."signing.secretKeyRingFile" = "/Users/zxk175/secring.gpg"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version project.version
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name = "spring-boot-starter-well-exception"
+                description = "well-exception"
+                url = "https://github.com/zxk175/spring-boot-starter-well-exception"
+
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = "123"
+                        name = "zxk175"
+                        email = "zxk175@qq.com"
+                    }
+                }
+
+                scm {
+                    connection = "scm:git:https://github.com/zxk175/spring-boot-starter-well-exception"
+                    developerConnection = "scm:git:https://github.com/zxk175/spring-boot-starter-well-exception"
+                    url = "https://github.com/zxk175/spring-boot-starter-well-exception"
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = "xxx"
+                password = "xxx"
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }
